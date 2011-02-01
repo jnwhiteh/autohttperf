@@ -4,8 +4,12 @@ TARG=autohttperf
 GOFILES=\
 		client.go \
 		parse.go \
+		types.go \
 
 include $(GOROOT)/src/Make.cmd
+
+## This exists solely to allow 'gotest' to work properly with this command,
+## since by default it only works with packages
 
 testpackage: _test/$(TARG).a
 testpackage-clean:

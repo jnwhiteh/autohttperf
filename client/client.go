@@ -6,30 +6,6 @@ import "log"
 import "os"
 import "rpc"
 
-type Args struct {
-	Host string
-	Port int
-	URL string
-	NumConnections int
-	ConnectionRate int
-	RequestsPerConnection int
-	Hog bool
-}
-
-type Result struct {
-	Stdout string
-	Stderr string
-	ExitStatus int
-}
-
-type Worker struct {
-	addr string				// The address of the RPC worker client
-	id string				// A string UID for this worker
-	client *rpc.Client
-	result *Result			// The pending RPC result
-	call *rpc.Call			// The pending RPC call result
-}
-
 // Runs a benchmark distributed over a set of clients
 func RunDistributedBenchmark(workers []*Worker, args *Args) {
 	// Fairly simple, just split args up over however many client
