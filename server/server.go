@@ -1,5 +1,6 @@
 package main
 
+import "flag"
 import "fmt"
 import "exec"
 import "http"
@@ -64,7 +65,7 @@ func (h *HTTPerf) Benchmark(args *Args, result *Result) os.Error {
 	log.Printf("   [%p] Input arguments: %#v", args, args)
 	log.Printf("   [%p] Commandline arguments: %#v", args, argv)
 
-	cmd, err := exec.Run(argv[0], argv, os.Environ(), "", exec.DevNull, exec.Pipe, exec.Pipe)
+	cmd, err := exec.Run(argv[0], argv, nil, "", exec.DevNull, exec.Pipe, exec.Pipe)
 	if err != nil {
 		return os.NewError(fmt.Sprintf(ERR_RUNFAILED, err.String()))
 	}
@@ -101,15 +102,19 @@ func (h *HTTPerf) Benchmark(args *Args, result *Result) os.Error {
 	return nil
 }
 
+var port *int = flag.Int("port", 1717, "The port on which to bind the server")
+
 func main() {
+	flag.Parse()
+
 	httperf := new(HTTPerf)
 	rpc.Register(httperf)
 	rpc.HandleHTTP()
-	l, e := net.Listen("tcp", ":1717")
+	l, e := net.Listen("tcp", fmt.Sprintf("localhost:%d", *port))
 	if e != nil {
 		log.Exit("listen error:", e)
 	}
 
-	log.Println("Now listening for requests on port 1717")
+	log.Printf("Now listening for requests on port %d", *port)
 	http.Serve(l, nil)
 }
