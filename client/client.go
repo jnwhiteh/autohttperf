@@ -72,6 +72,8 @@ func RunDistributedBenchmark(workers []*Worker, args *Args) {
 			log.Printf("[%s] Got results", worker.id)
 			if call.Error != nil {
 				log.Printf("[%s] Error state reported: %s", worker.id, call.Error.String())
+			} else {
+				log.Printf("[%s] %s", worker.id, worker.result.Stdout)
 			}
 		}
 	}
