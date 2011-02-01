@@ -52,8 +52,8 @@ var expectedNums = map[int]float64{
 	48: 0, 49: 0, 50: 0, 51: 0,
 }
 
-var expectedStrings = map[int]string {
-	0: testData,
+var expectedStrings = map[int]string{
+	0:  testData,
 	41: "KB/s",
 	42: "50.0*10^6",
 }
@@ -133,5 +133,3 @@ func TestParse(t *testing.T) {
 		}
 	}
 }
-
-

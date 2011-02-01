@@ -11,18 +11,18 @@ import "os"
 import "rpc"
 
 type Args struct {
-	Host string
-	Port int
-	URL string
-	NumConnections int
-	ConnectionRate int
+	Host                  string
+	Port                  int
+	URL                   string
+	NumConnections        int
+	ConnectionRate        int
 	RequestsPerConnection int
-	Hog bool
+	Hog                   bool
 }
 
 type Result struct {
-	Stdout string
-	Stderr string
+	Stdout     string
+	Stderr     string
 	ExitStatus int
 }
 
@@ -30,11 +30,11 @@ type HTTPerf int
 
 const (
 	ERR_EXECNOTFOUND = "Could not find the 'httperf' executable: %s"
-	ERR_RUNFAILED = "Failed to run command: %s"
-	ERR_WAIT = "Failed when waiting on pid %d"
-	ERR_NOTEXITED = "Command did not properly exit: %s"
-	ERR_READOUT = "Could not read stdout: %s"
-	ERR_READERR = "Could not read stderr: %s"
+	ERR_RUNFAILED    = "Failed to run command: %s"
+	ERR_WAIT         = "Failed when waiting on pid %d"
+	ERR_NOTEXITED    = "Command did not properly exit: %s"
+	ERR_READOUT      = "Could not read stdout: %s"
+	ERR_READERR      = "Could not read stderr: %s"
 )
 
 func (h *HTTPerf) Benchmark(args *Args, result *Result) os.Error {
