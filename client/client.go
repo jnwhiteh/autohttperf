@@ -139,6 +139,7 @@ func StressTestConnections(workers []*Worker) {
 
 		if errorState {
 			cooldownSteps = cooldownSteps - 1
+			log.Printf("In an error state with %d rounds to go", cooldownSteps)
 		}
 
 		// Stop benchmarking when we've run out of cooldown steps
