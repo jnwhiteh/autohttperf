@@ -98,7 +98,7 @@ func (h *HTTPerf) Benchmark(args *Args, result *Result) os.Error {
 	return nil
 }
 
-var host *string = flag.String("host", "*", "The host on which to bind the server")
+var host *string = flag.String("host", "", "The host on which to bind the server")
 var port *int = flag.Int("port", 1717, "The port on which to bind the server")
 
 func main() {
