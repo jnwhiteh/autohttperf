@@ -98,6 +98,7 @@ func (h *HTTPerf) Benchmark(args *Args, result *Result) os.Error {
 	return nil
 }
 
+var host *string = flag.String("host", "*", "The host on which to bind the server")
 var port *int = flag.Int("port", 1717, "The port on which to bind the server")
 
 func main() {
@@ -106,11 +107,11 @@ func main() {
 	httperf := new(HTTPerf)
 	rpc.Register(httperf)
 	rpc.HandleHTTP()
-	l, e := net.Listen("tcp", fmt.Sprintf("localhost:%d", *port))
+	l, e := net.Listen("tcp", fmt.Sprintf("%s:%d", *host, *port))
 	if e != nil {
 		log.Exit("listen error:", e)
 	}
 
-	log.Printf("Now listening for requests on port %d", *port)
+	log.Printf("Now listening for requests on %s:%d", *host, *port)
 	http.Serve(l, nil)
 }
