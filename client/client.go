@@ -124,10 +124,11 @@ func StressTestConnections(workers []*Worker) {
 		hasErrors := SetHasErrors(data)
 
 		if errorState && !hasErrors {
-			// Clear the error state, the server has recovered
+			log.Printf("Exiting error state, server seems to have recovered")
 			errorState = false
 			cooldownSteps = *cooldown
 		} else if !errorState && hasErrors {
+			log.Printf("Entering an error state, will cooldown for %d rounds", cooldownSteps)
 			errorState = true
 		}
 
@@ -145,6 +146,8 @@ func StressTestConnections(workers []*Worker) {
 		if newStep, ok := stressRates[rate]; ok {
 			step = newStep
 		}
+
+		log.Printf("Current rate: %d, step: %d", rate, step)
 
 		// Perform any sleep, as directed
 		log.Printf("Sleeping for %d seconds", *sleep)
