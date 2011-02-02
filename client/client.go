@@ -158,6 +158,7 @@ func StressTestConnections(workers []*Worker) {
 		log.Printf("Sleeping for %d seconds", *sleep)
 		var sleeptime int64 = int64(*sleep) * 1000000000
 		time.Sleep(sleeptime)
+		log.Printf("Done sleeping")
 	}
 }
 
