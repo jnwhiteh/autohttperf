@@ -75,3 +75,13 @@ func WriteTSVParseData(w io.Writer, data *PerfData) {
 	io.WriteString(w, strings.Join(columns, ","))
 	io.WriteString(w, "\n")
 }
+
+func SetHasErrors(perfdata []*PerfData) bool {
+	for _, data := range perfdata {
+		if data.ErrTotal > 0 {
+			return true
+		}
+	}
+
+	return false
+}

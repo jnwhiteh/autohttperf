@@ -96,7 +96,8 @@ func StressTestConnections(workers []*Worker) {
 	rate := stressRates[0]
 	step := stressRates[rate]
 
-	//cooldownSteps := *cooldown
+	errorState := false
+	cooldownSteps := *cooldown
 
 	// Output the TSV header
 	WriteTSVHeader(os.Stdout)
@@ -120,15 +121,37 @@ func StressTestConnections(workers []*Worker) {
 
 		WriteTSVParseDataSet(os.Stdout, data)
 
+		hasErrors := SetHasErrors(data)
+
+		if errorState && !hasErrors {
+			// Clear the error state, the server has recovered
+			errorState = false
+			cooldownSteps = *cooldown
+		} else if !errorState && hasErrors {
+			errorState = true
+		}
+
+		if errorState {
+			cooldownSteps = cooldownSteps - 1
+		}
+
+		// Stop benchmarking when we've run out of cooldown steps
+		if cooldownSteps < 0 {
+			break
+		}
+
 		// Increment the rate/step accordingly.
 		rate = rate + step
 		if newStep, ok := stressRates[rate]; ok {
 			step = newStep
 		}
+
+		// Perform any sleep, as directed
+		log.Printf("Sleeping for %d seconds", *sleep)
+		var sleeptime int64 = int64(*sleep) * 1000000000
+		time.Sleep(sleeptime)
 	}
 }
-
-
 
 // Stress test a server for maximum number of requests per second
 func StressTestRequests(workers []*Worker) {
@@ -180,6 +203,7 @@ var requests *int = flag.Int("requests", 5, "The number of requests sent per con
 var numErrors *int = flag.Int("numerrors", 500, "The maximum acceptable number of errors to indicate 'stressed' (stress only)")
 var cooldown *int = flag.Int("cooldown", 3, "The number of steps to take following an 'error state' (stress only)")
 var testLength *int = flag.Int("duration", 60, "The duration of each 'step' of the stress test in seconds (stress only)")
+var sleep *int = flag.Int("sleeptime", 5, "The amount of time (in seconds) to sleep between each round (stress only)")
 
 var PrintUsage = func() {
 	fmt.Fprintf(os.Stderr, "Usage of %s: \"host1:port1\" ...\n", os.Args[0])
