@@ -32,29 +32,6 @@ var resultRegexp = regexp.MustCompile(resultPattern)
 
 const NUM_RESULTS = 52
 
-type PerfData struct {
-	Raw string
-	ConnectionBurstLength,
-	TotalConnections, TotalRequests, TotalReplies, TestDuration,
-	ConnectionsPerSecond, MsPerConnection, ConcurrentConnections,
-	ConnectionTimeMin, ConnectionTimeAvg, ConnectionTimeMax,
-	ConnectionTimeMedian, ConnectionTimeStddev,
-	ConnectionTimeConnect,
-	RepliesPerConnection,
-	RequestsPerSecond, MsPerRequest,
-	RequestSize,
-	RepliesPerSecMin, RepliesPerSecAvgm, RepliesPerSecMax,
-	RepliesPerSecStddev, RepliesPerSecNumSamples,
-	ReplyTimeResponse, ReplyTimeTransfer,
-	ReplySizeHeader, ReplySizeContent, ReplySizeFooter, ReplySizeTotal,
-	ReplyStatus_1xx, ReplyStatus_2xx, ReplyStatus_3xx, ReplyStatus_4xx, ReplyStatus_5xx,
-	CpuTimeUser, CpuTimeSystem, CpuPercUser, CpuPercSystem, CpuPercTotal,
-	NetIOValue float64
-	NetIOUnit, NetIOBytesPerSecond string
-	ErrTotal, ErrClientTimeout, ErrSocketTimeout, ErrConnectionRefused,
-	ErrConnectionReset, ErrFdUnavail, ErrAddRunAvail, ErrFtabFull, ErrOther float64
-}
-
 func ParseResultsRaw(str string) []string {
 	return resultRegexp.FindStringSubmatch(str)
 }
