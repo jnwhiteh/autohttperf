@@ -74,6 +74,10 @@ func RunDistributedBenchmark(workers []*Worker, args *Args) ([]*PerfData, bool) 
 					success = false
 				}
 				results = append(results, perfdata)
+
+				if len(worker.result.Stderr) > 0 {
+					log.Printf("[%s] Stderr: %s", worker.id, worker.result.Stderr)
+				}
 			}
 		}
 	}
