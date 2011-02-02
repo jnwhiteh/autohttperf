@@ -5,6 +5,7 @@ GOFILES=\
 		client.go \
 		parse.go \
 		types.go \
+		utils.go \
 
 include $(GOROOT)/src/Make.cmd
 
