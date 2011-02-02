@@ -126,7 +126,7 @@ func StressTestConnections(workers []*Worker) {
 		WriteTSVParseDataSet(os.Stdout, data)
 
 		// Check if the data set is over the error threshold
-		hasErrors := SetHasErrors(data, numErrors)
+		hasErrors := SetHasErrors(data, *numErrors)
 
 		if errorState && !hasErrors {
 			log.Printf("Exiting error state, server seems to have recovered")

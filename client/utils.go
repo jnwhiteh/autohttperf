@@ -79,7 +79,7 @@ func WriteTSVParseData(w io.Writer, data *PerfData) {
 func SetHasErrors(perfdata []*PerfData, threshold int) bool {
 	total := 0 
 	for _, data := range perfdata {
-		total = total + data.ErrTotal
+		total = total + int(data.ErrTotal)
 	}
 
 	if total >= threshold {
