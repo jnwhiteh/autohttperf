@@ -107,8 +107,9 @@ func StressTestConnections(workers []*Worker) {
 	WriteTSVHeader(os.Stdout)
 
 	for {
-		// Calculate the number of connections to request
-		numconns := *testLength * rate
+		// Calculate the number of connections to request, adjusting for the
+		// number of workers that are going to be involved in the request
+		numconns := *testLength * rate * len(workers)
 
 		args := new(Args)
 		args.Host = *server
