@@ -5,12 +5,20 @@ import "fmt"
 import "log"
 import "os"
 import "rpc"
+import "time"
 
-// Runs a benchmark distributed over a set of clients
-func RunDistributedBenchmark(workers []*Worker, args *Args) {
+// Runs a benchmark distributed over a set of clients. Returns a slice of the
+// resulting PerfData structures and a boolean flags indicating if all workers
+// successfully reported data, i.e. if the benchmark can be trusted.
+
+func RunDistributedBenchmark(workers []*Worker, args *Args) ([]*PerfData, bool) {
 	// Fairly simple, just split args up over however many client
 	// we're connected to, and perform the benchmark. Don't collate
 	// results or anything at the current time.
+
+	// Generate a simple UID based on the current time in nanoseconds.
+	nanotime := time.Nanoseconds()
+	nanoid := fmt.Sprintf("%#v", nanotime)
 
 	numWorkers := len(workers)
 	log.Printf("Distributing benchmark over %d clients", numWorkers)
@@ -24,7 +32,6 @@ func RunDistributedBenchmark(workers []*Worker, args *Args) {
 			args.NumConnections / numWorkers,
 			args.ConnectionRate,
 			args.RequestsPerConnection,
-			args.Hog,
 		}
 
 		result := new(Result)
@@ -33,31 +40,95 @@ func RunDistributedBenchmark(workers []*Worker, args *Args) {
 
 		if call.Error != nil {
 			log.Printf("[%s] Failed to open connection: %s", worker.id, call.Error)
+			worker.args = wargs
 			worker.result = nil
 			worker.call = nil
 		} else {
 			log.Printf("[%s] Requested benchmark", worker.id)
+			worker.args = wargs
 			worker.result = result
 			worker.call = call
+			worker.date = time.Seconds()
 		}
 	}
 
+	// Collect the PerfData into a slice
+	results := make([]*PerfData, 0, len(workers))
+	success := true
+
 	for _, worker := range workers {
-		if worker.call != nil {
+		if worker.call == nil {
+			// This call was not successful
+			success = false
+		} else {
 			call := <-worker.call.Done
 			log.Printf("[%s] Got results", worker.id)
 			if call.Error != nil {
 				log.Printf("[%s] Error state reported: %s", worker.id, call.Error.String())
+				success = false
 			} else {
-				log.Printf("[%s] %s", worker.id, worker.result.Stdout)
+				perfdata, err := ParseResults(worker.result.Stdout, nanoid, worker.date, worker.args)
+				if err != nil {
+					// Error parsing, report this
+					log.Printf("[%s] Error parsing perf data: %s\n", worker.id, err.String())
+					success = false
+				}
+				results = append(results, perfdata)
 			}
 		}
 	}
+
+	return results, success
 }
 
 // Stress test a server for maximum number of connections per second
 func StressTestConnections(workers []*Worker) {
+	// A list of stress and steps, these should be sequential
+	var stressRates = map[int]int{
+		0: 25, // Start benchamrking at rate 25
+	   25: 25, // At rate 25, set the step to 25
+	   100: 50, // At rate 100, set the step to 50
+	   500: 100, // At rate 500, set the step to 100
+	   1000: 200, // At rate 1000, set the step to 200
+	}
+
+	// Fetch the starting connection rate from the map
+	rate := stressRates[0]
+	step := stressRates[rate]
+
+	//cooldownSteps := *cooldown
+
+	// Output the TSV header
+	WriteTSVHeader(os.Stdout)
+
+	for {
+		// Calculate the number of connections to request
+		numconns := *testLength * rate
+
+		args := new(Args)
+		args.Host = *server
+		args.Port = *port
+		args.URL = *url
+		args.NumConnections = numconns
+		args.ConnectionRate = rate
+		args.RequestsPerConnection = *requests
+
+		data, ok := RunDistributedBenchmark(workers, args)
+		if !ok {
+			log.Printf("Stress test for rate %d did not fully succeed", rate)
+		}
+
+		WriteTSVParseDataSet(os.Stdout, data)
+
+		// Increment the rate/step accordingly.
+		rate = rate + step
+		if newStep, ok := stressRates[rate]; ok {
+			step = newStep
+		}
+	}
 }
+
+
 
 // Stress test a server for maximum number of requests per second
 func StressTestRequests(workers []*Worker) {
@@ -71,9 +142,19 @@ func RunManualBenchmark(workers []*Worker) {
 		*numConns,
 		*connRate,
 		*requests,
-		true,
 	}
-	RunDistributedBenchmark(workers, args)
+
+	data, ok := RunDistributedBenchmark(workers, args)
+	if !ok {
+		log.Printf("Manual benchmark did not fully succeed")
+	}
+
+	// Write the TSV header
+	WriteTSVHeader(os.Stdout)
+	// Write out the perf data for each benchmark
+	for _, perfdata := range data {
+		WriteTSVParseData(os.Stdout, perfdata)
+	}
 }
 
 // General options that every single mode will require
@@ -96,8 +177,9 @@ var connRate *int = flag.Int("connrate", 200, "The rate of new connections (conn
 var requests *int = flag.Int("requests", 5, "The number of requests sent per connection (manual only)")
 
 // Stress test options
-var numErrors *int = flag.Int("numerrors", 500, "The maximum acceptable number of errors to indicate 'stressed'")
-var cooldown *int = flag.Int("cooldown", 3, "The number of steps to take following an 'error state'")
+var numErrors *int = flag.Int("numerrors", 500, "The maximum acceptable number of errors to indicate 'stressed' (stress only)")
+var cooldown *int = flag.Int("cooldown", 3, "The number of steps to take following an 'error state' (stress only)")
+var testLength *int = flag.Int("duration", 60, "The duration of each 'step' of the stress test in seconds (stress only)")
 
 var PrintUsage = func() {
 	fmt.Fprintf(os.Stderr, "Usage of %s: \"host1:port1\" ...\n", os.Args[0])
@@ -125,7 +207,7 @@ func main() {
 		}
 
 		id := fmt.Sprintf("%s:%d", arg, idx)
-		worker := &Worker{arg, id, client, nil, nil}
+		worker := &Worker{arg, id, client, nil, nil, 0, nil}
 		workers = append(workers, worker)
 	}
 

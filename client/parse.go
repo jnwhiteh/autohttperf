@@ -36,9 +36,18 @@ func ParseResultsRaw(str string) []string {
 	return resultRegexp.FindStringSubmatch(str)
 }
 
-func ParseResults(str string) (*PerfData, os.Error) {
+func ParseResults(str string, id string, date int64, args *Args) (*PerfData, os.Error) {
 	results := ParseResultsRaw(str)
 	data := new(PerfData)
+
+	data.BenchmarkId = id
+	data.BenchmarkDate = date
+	data.ArgHost = args.Host
+	data.ArgPort = args.Port
+	data.ArgURL = args.URL
+	data.ArgNumConnections = args.NumConnections
+	data.ArgConnectionRate = args.ConnectionRate
+	data.ArgRequestsPerConnection = args.RequestsPerConnection
 
 	var conv float64
 	var err os.Error

@@ -17,7 +17,6 @@ type Args struct {
 	NumConnections        int
 	ConnectionRate        int
 	RequestsPerConnection int
-	Hog                   bool
 }
 
 type Result struct {
@@ -55,10 +54,7 @@ func (h *HTTPerf) Benchmark(args *Args, result *Result) os.Error {
 		"--num-conns", fmt.Sprintf("%d", args.NumConnections),
 		"--rate", fmt.Sprintf("%d", args.ConnectionRate),
 		"--num-calls", fmt.Sprintf("%d", args.RequestsPerConnection),
-	}
-
-	if args.Hog {
-		argv = append(argv, "--hog")
+		"--hog",
 	}
 
 	log.Printf("++ [%p] Running benchmark of %s on port %d", args, args.Host, args.Port)
