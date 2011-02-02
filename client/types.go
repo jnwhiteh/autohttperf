@@ -52,7 +52,7 @@ type PerfData struct {
 	RepliesPerConnection,
 	RequestsPerSecond, MsPerRequest,
 	RequestSize,
-	RepliesPerSecMin, RepliesPerSecAvgm, RepliesPerSecMax,
+	RepliesPerSecMin, RepliesPerSecAvg, RepliesPerSecMax,
 	RepliesPerSecStddev, RepliesPerSecNumSamples,
 	ReplyTimeResponse, ReplyTimeTransfer,
 	ReplySizeHeader, ReplySizeContent, ReplySizeFooter, ReplySizeTotal,
