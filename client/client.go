@@ -30,7 +30,7 @@ func RunDistributedBenchmark(workers []*Worker, args *Args) ([]*PerfData, bool) 
 			args.Port,
 			args.URL,
 			args.NumConnections / numWorkers,
-			args.ConnectionRate,
+			args.ConnectionRate / numWorkers,
 			args.RequestsPerConnection,
 		}
 
