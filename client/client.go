@@ -89,9 +89,8 @@ func RunDistributedBenchmark(workers []*Worker, args *Args) ([]*PerfData, bool) 
 func StressTestConnections(workers []*Worker) {
 	// A list of stress and steps, these should be sequential
 	var stressRates = map[int]int{
-		0: 25, // Start benchamrking at rate 25
-	   25: 25, // At rate 25, set the step to 25
-	   100: 50, // At rate 100, set the step to 50
+		0: 50,  // Start benchmarking at rate 50
+		50: 50, // Step up 50 rate each round
 	}
 
 	// Fetch the starting connection rate from the map
@@ -105,9 +104,13 @@ func StressTestConnections(workers []*Worker) {
 	WriteTSVHeader(os.Stdout)
 
 	for {
-		// Calculate the number of connections to request, adjusting for the
-		// number of workers that are going to be involved in the request
-		numconns := *testLength * rate * len(workers)
+		// Calculate the number of connections to request. Since we're distributing
+		// both the rate and the number of connections over several workers, this
+		// does not need to take that into account.
+		//
+		// 10 second duration with 300 connections per second is 3000 connections,
+		// regardless of how many clients are used to distribute that load.
+		numconns := *testLength * rate
 
 		args := new(Args)
 		args.Host = *server
