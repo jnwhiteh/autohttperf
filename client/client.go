@@ -92,8 +92,6 @@ func StressTestConnections(workers []*Worker) {
 		0: 25, // Start benchamrking at rate 25
 	   25: 25, // At rate 25, set the step to 25
 	   100: 50, // At rate 100, set the step to 50
-	   500: 100, // At rate 500, set the step to 100
-	   1000: 200, // At rate 1000, set the step to 200
 	}
 
 	// Fetch the starting connection rate from the map
