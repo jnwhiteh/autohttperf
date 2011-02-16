@@ -55,20 +55,20 @@ func WriteTSVParseData(w io.Writer, data *PerfData) {
 		}
 
 		switch t := column.(type) {
-			case *reflect.StringValue:
-				svalue := column.(*reflect.StringValue)
-				scolumn := svalue.Get()
-				columns = append(columns, scolumn)
-			case *reflect.FloatValue:
-				fvalue := column.(*reflect.FloatValue)
-				fcolumn := fvalue.Get()
-				columns = append(columns, fmt.Sprintf("%#v", fcolumn))
-			case *reflect.IntValue:
-				ivalue := column.(*reflect.IntValue)
-				icolumn := ivalue.Get()
-				columns = append(columns, fmt.Sprintf("%#v", icolumn))
-			default:
-				log.Fatalf("Got a field we cannot handle: %s", field)
+		case *reflect.StringValue:
+			svalue := column.(*reflect.StringValue)
+			scolumn := svalue.Get()
+			columns = append(columns, scolumn)
+		case *reflect.FloatValue:
+			fvalue := column.(*reflect.FloatValue)
+			fcolumn := fvalue.Get()
+			columns = append(columns, fmt.Sprintf("%#v", fcolumn))
+		case *reflect.IntValue:
+			ivalue := column.(*reflect.IntValue)
+			icolumn := ivalue.Get()
+			columns = append(columns, fmt.Sprintf("%#v", icolumn))
+		default:
+			log.Fatalf("Got a field we cannot handle: %s", field)
 		}
 	}
 
@@ -77,7 +77,7 @@ func WriteTSVParseData(w io.Writer, data *PerfData) {
 }
 
 func SetHasErrors(perfdata []*PerfData, threshold int) bool {
-	total := 0 
+	total := 0
 	for _, data := range perfdata {
 		total = total + int(data.ErrTotal)
 	}

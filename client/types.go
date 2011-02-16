@@ -24,22 +24,22 @@ type Worker struct {
 	client *rpc.Client
 	result *Result   // The pending RPC result
 	call   *rpc.Call // The pending RPC call result
-	date   int64 // The time the pending call was started
-	args   *Args // The arguments passed to the pending call
+	date   int64     // The time the pending call was started
+	args   *Args     // The arguments passed to the pending call
 }
 
 type PerfData struct {
 	// These fields MUST be supplied by the implementor, they do not come
 	// from the parsed performance data
-	BenchmarkId string
-	BenchmarkDate int64
-	ArgHost string
-	ArgPort int
-	ArgURL string
-	ArgNumConnections int
-	ArgConnectionRate int
+	BenchmarkId              string
+	BenchmarkDate            int64
+	ArgHost                  string
+	ArgPort                  int
+	ArgURL                   string
+	ArgNumConnections        int
+	ArgConnectionRate        int
 	ArgRequestsPerConnection int
-	ArgDuration int
+	ArgDuration              int
 
 	// The following fields all come from the parsed data and should not
 	// need to be changed.

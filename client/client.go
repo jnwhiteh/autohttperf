@@ -90,7 +90,7 @@ func RunDistributedBenchmark(workers []*Worker, args *Args) ([]*PerfData, bool) 
 func StressTestConnections(workers []*Worker) {
 	// A list of stress and steps, these should be sequential
 	var stressRates = map[int]int{
-		0: 100,   // Start benchmarking at rate 100
+		0:   100, // Start benchmarking at rate 100
 		100: 100, // Step up 100 rate each round
 	}
 
