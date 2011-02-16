@@ -89,13 +89,16 @@ func RunDistributedBenchmark(workers []*Worker, args *Args) ([]*PerfData, bool) 
 func StressTestConnections(workers []*Worker) {
 	// A list of stress and steps, these should be sequential
 	var stressRates = map[int]int{
-		0: 50,  // Start benchmarking at rate 50
-		50: 50, // Step up 50 rate each round
+		0: 100,   // Start benchmarking at rate 100
+		100: 100, // Step up 100 rate each round
 	}
 
 	// Fetch the starting connection rate from the map
-	rate := stressRates[0]
+	rate := *startRate
 	step := stressRates[rate]
+	if step == 0 {
+		step = stressRates[0]
+	}
 
 	errorState := false
 	cooldownSteps := *cooldown
@@ -216,6 +219,7 @@ var numErrors *int = flag.Int("numerrors", 500, "The maximum acceptable number o
 var cooldown *int = flag.Int("cooldown", 3, "The number of steps to take following an 'error state' (stress only)")
 var testLength *int = flag.Int("duration", 60, "The duration of each 'step' of the stress test in seconds (stress only)")
 var sleep *int = flag.Int("sleeptime", 5, "The amount of time (in seconds) to sleep between each round (stress only)")
+var startRate *int = flag.Int("startrate", 100, "The connection start rate for the stress test")
 
 var PrintUsage = func() {
 	fmt.Fprintf(os.Stderr, "Usage of %s: \"host1:port1\" ...\n", os.Args[0])
