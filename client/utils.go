@@ -35,13 +35,13 @@ func WriteTSVParseData(w io.Writer, data *PerfData) {
 	// Turn the struct into a Type so we can use reflection
 	ptr, ok := reflect.NewValue(data).(*reflect.PtrValue)
 	if !ok {
-		log.Exitf("Could not convert results into a pointer value")
+		log.Fatalf("Could not convert results into a pointer value")
 		return
 	}
 
 	val, ok := ptr.Elem().(*reflect.StructValue)
 	if !ok {
-		log.Exitf("Failed when reflecting on struct")
+		log.Fatalf("Failed when reflecting on struct")
 		return
 	}
 
@@ -51,7 +51,7 @@ func WriteTSVParseData(w io.Writer, data *PerfData) {
 	for _, field := range fieldNames {
 		column := val.FieldByName(field)
 		if column == nil {
-			log.Exitf("Failed when reflecting field %s", field)
+			log.Fatalf("Failed when reflecting field %s", field)
 		}
 
 		switch t := column.(type) {
@@ -68,7 +68,7 @@ func WriteTSVParseData(w io.Writer, data *PerfData) {
 				icolumn := ivalue.Get()
 				columns = append(columns, fmt.Sprintf("%#v", icolumn))
 			default:
-				log.Exitf("Got a field we cannot handle: %s", field)
+				log.Fatalf("Got a field we cannot handle: %s", field)
 		}
 	}
 

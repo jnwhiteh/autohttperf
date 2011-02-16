@@ -239,7 +239,7 @@ func main() {
 		log.Printf("New RPC connection %p", client)
 
 		if err != nil {
-			log.Exitf("Could not connect to client %s: %s", arg, err)
+			log.Fatalf("Could not connect to client %s: %s", arg, err)
 		}
 
 		id := fmt.Sprintf("%s:%d", arg, idx)
@@ -248,7 +248,7 @@ func main() {
 	}
 
 	if !*modeStressConn && !*modeStressReqs && !*modeManual {
-		log.Exitf("No mode selected, please supply one of -stressconn, -stressreqs or -manual")
+		log.Fatalf("No mode selected, please supply one of -stressconn, -stressreqs or -manual")
 	}
 
 	if *modeManual {

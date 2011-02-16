@@ -68,7 +68,7 @@ func (h *HTTPerf) Benchmark(args *Args, result *Result) os.Error {
 
 	defer cmd.Close()
 
-	log.Printf("   [%p] Process successfully started with PID: %d", args, cmd.Pid)
+	log.Printf("   [%p] Process successfully started with PID: %d", args, cmd.Process.Pid)
 
 	output, err := ioutil.ReadAll(cmd.Stdout)
 	if err != nil {
@@ -86,7 +86,7 @@ func (h *HTTPerf) Benchmark(args *Args, result *Result) os.Error {
 	log.Printf("-- [%p] Command joined and finished", args)
 
 	if err != nil {
-		return os.NewError(fmt.Sprintf(ERR_WAIT, cmd.Pid))
+		return os.NewError(fmt.Sprintf(ERR_WAIT, cmd.Process.Pid))
 	} else if !w.Exited() {
 		return os.NewError(fmt.Sprintf(ERR_NOTEXITED, w.String()))
 	}
@@ -109,7 +109,7 @@ func main() {
 	rpc.HandleHTTP()
 	l, e := net.Listen("tcp", fmt.Sprintf("%s:%d", *host, *port))
 	if e != nil {
-		log.Exit("listen error:", e)
+		log.Fatalf("listen error:", e)
 	}
 
 	log.Printf("Now listening for requests on %s:%d", *host, *port)
