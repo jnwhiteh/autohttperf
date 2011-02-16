@@ -9,6 +9,7 @@ type Args struct {
 	NumConnections        int
 	ConnectionRate        int
 	RequestsPerConnection int
+	Duration              int
 }
 
 type Result struct {
@@ -38,6 +39,7 @@ type PerfData struct {
 	ArgNumConnections int
 	ArgConnectionRate int
 	ArgRequestsPerConnection int
+	ArgDuration int
 
 	// The following fields all come from the parsed data and should not
 	// need to be changed.

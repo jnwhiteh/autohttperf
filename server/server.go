@@ -17,6 +17,7 @@ type Args struct {
 	NumConnections        int
 	ConnectionRate        int
 	RequestsPerConnection int
+	Duration              int
 }
 
 type Result struct {

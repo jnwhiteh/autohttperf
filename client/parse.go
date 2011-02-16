@@ -48,6 +48,7 @@ func ParseResults(str string, id string, date int64, args *Args) (*PerfData, os.
 	data.ArgNumConnections = args.NumConnections
 	data.ArgConnectionRate = args.ConnectionRate
 	data.ArgRequestsPerConnection = args.RequestsPerConnection
+	data.ArgDuration = args.Duration
 
 	var conv float64
 	var err os.Error
