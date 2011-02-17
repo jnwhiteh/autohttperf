@@ -32,6 +32,7 @@ func RunDistributedBenchmark(workers []*Worker, args *Args) ([]*PerfData, bool) 
 			args.NumConnections / numWorkers,
 			args.ConnectionRate / numWorkers,
 			args.RequestsPerConnection,
+			args.Duration,
 		}
 
 		result := new(Result)
@@ -89,7 +90,7 @@ func RunDistributedBenchmark(workers []*Worker, args *Args) ([]*PerfData, bool) 
 func StressTestConnections(workers []*Worker) {
 	// A list of stress and steps, these should be sequential
 	var stressRates = map[int]int{
-		0: 100,   // Start benchmarking at rate 100
+		0:   100, // Start benchmarking at rate 100
 		100: 100, // Step up 100 rate each round
 	}
 
@@ -180,6 +181,7 @@ func RunManualBenchmark(workers []*Worker) {
 		*numConns,
 		*connRate,
 		*requests,
+		*testLength,
 	}
 
 	data, ok := RunDistributedBenchmark(workers, args)

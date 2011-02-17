@@ -7,7 +7,7 @@ import "strings"
 import "reflect"
 
 // The 'Raw' field is omitted here, since all of the data is already included
-var fieldNames = []string{"BenchmarkId", "BenchmarkDate", "ArgHost", "ArgPort", "ArgURL", "ArgNumConnections", "ArgConnectionRate", "ArgRequestsPerConnection", "ConnectionBurstLength", "TotalConnections", "TotalRequests", "TotalReplies", "TestDuration", "ConnectionsPerSecond", "MsPerConnection", "ConcurrentConnections", "ConnectionTimeMin", "ConnectionTimeAvg", "ConnectionTimeMax", "ConnectionTimeMedian", "ConnectionTimeStddev", "ConnectionTimeConnect", "RepliesPerConnection", "RequestsPerSecond", "MsPerRequest", "RequestSize", "RepliesPerSecMin", "RepliesPerSecAvg", "RepliesPerSecMax", "RepliesPerSecStddev", "RepliesPerSecNumSamples", "ReplyTimeResponse", "ReplyTimeTransfer", "ReplySizeHeader", "ReplySizeContent", "ReplySizeFooter", "ReplySizeTotal", "ReplyStatus_1xx", "ReplyStatus_2xx", "ReplyStatus_3xx", "ReplyStatus_4xx", "ReplyStatus_5xx", "CpuTimeUser", "CpuTimeSystem", "CpuPercUser", "CpuPercSystem", "CpuPercTotal", "NetIOValue", "NetIOUnit", "NetIOBytesPerSecond", "ErrTotal", "ErrClientTimeout", "ErrSocketTimeout", "ErrConnectionRefused", "ErrConnectionReset", "ErrFdUnavail", "ErrAddRunAvail", "ErrFtabFull", "ErrOther"}
+var fieldNames = []string{"BenchmarkId", "BenchmarkDate", "ArgHost", "ArgPort", "ArgURL", "ArgNumConnections", "ArgConnectionRate", "ArgRequestsPerConnection", "ArgDuration", "ConnectionBurstLength", "TotalConnections", "TotalRequests", "TotalReplies", "TestDuration", "ConnectionsPerSecond", "MsPerConnection", "ConcurrentConnections", "ConnectionTimeMin", "ConnectionTimeAvg", "ConnectionTimeMax", "ConnectionTimeMedian", "ConnectionTimeStddev", "ConnectionTimeConnect", "RepliesPerConnection", "RequestsPerSecond", "MsPerRequest", "RequestSize", "RepliesPerSecMin", "RepliesPerSecAvg", "RepliesPerSecMax", "RepliesPerSecStddev", "RepliesPerSecNumSamples", "ReplyTimeResponse", "ReplyTimeTransfer", "ReplySizeHeader", "ReplySizeContent", "ReplySizeFooter", "ReplySizeTotal", "ReplyStatus_1xx", "ReplyStatus_2xx", "ReplyStatus_3xx", "ReplyStatus_4xx", "ReplyStatus_5xx", "CpuTimeUser", "CpuTimeSystem", "CpuPercUser", "CpuPercSystem", "CpuPercTotal", "NetIOValue", "NetIOUnit", "NetIOBytesPerSecond", "ErrTotal", "ErrClientTimeout", "ErrSocketTimeout", "ErrConnectionRefused", "ErrConnectionReset", "ErrFdUnavail", "ErrAddRunAvail", "ErrFtabFull", "ErrOther"}
 
 // Write a CSV header to the given writer including each of the field names
 // above, and an optional list of additional column names specified. In the
@@ -55,20 +55,20 @@ func WriteTSVParseData(w io.Writer, data *PerfData) {
 		}
 
 		switch t := column.(type) {
-			case *reflect.StringValue:
-				svalue := column.(*reflect.StringValue)
-				scolumn := svalue.Get()
-				columns = append(columns, scolumn)
-			case *reflect.FloatValue:
-				fvalue := column.(*reflect.FloatValue)
-				fcolumn := fvalue.Get()
-				columns = append(columns, fmt.Sprintf("%#v", fcolumn))
-			case *reflect.IntValue:
-				ivalue := column.(*reflect.IntValue)
-				icolumn := ivalue.Get()
-				columns = append(columns, fmt.Sprintf("%#v", icolumn))
-			default:
-				log.Fatalf("Got a field we cannot handle: %s", field)
+		case *reflect.StringValue:
+			svalue := column.(*reflect.StringValue)
+			scolumn := svalue.Get()
+			columns = append(columns, scolumn)
+		case *reflect.FloatValue:
+			fvalue := column.(*reflect.FloatValue)
+			fcolumn := fvalue.Get()
+			columns = append(columns, fmt.Sprintf("%#v", fcolumn))
+		case *reflect.IntValue:
+			ivalue := column.(*reflect.IntValue)
+			icolumn := ivalue.Get()
+			columns = append(columns, fmt.Sprintf("%#v", icolumn))
+		default:
+			log.Fatalf("Got a field we cannot handle: %s", field)
 		}
 	}
 
@@ -77,7 +77,7 @@ func WriteTSVParseData(w io.Writer, data *PerfData) {
 }
 
 func SetHasErrors(perfdata []*PerfData, threshold int) bool {
-	total := 0 
+	total := 0
 	for _, data := range perfdata {
 		total = total + int(data.ErrTotal)
 	}
