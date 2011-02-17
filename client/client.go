@@ -190,7 +190,10 @@ func RunManualBenchmark(workers []*Worker) {
 	// Write the TSV header
 	WriteTSVHeader(os.Stdout)
 	// Write out the perf data for each benchmark
-	for _, perfdata := range data {
+	for idx, perfdata := range data {
+		if *dumpraw {
+			log.Printf("Client %d output: \n%s\n", idx, perfdata.Raw)
+		}
 		WriteTSVParseData(os.Stdout, perfdata)
 	}
 }
@@ -220,6 +223,7 @@ var cooldown *int = flag.Int("cooldown", 3, "The number of steps to take followi
 var testLength *int = flag.Int("duration", 60, "The duration of each 'step' of the stress test in seconds (stress only)")
 var sleep *int = flag.Int("sleeptime", 5, "The amount of time (in seconds) to sleep between each round (stress only)")
 var startRate *int = flag.Int("startrate", 100, "The connection start rate for the stress test")
+var dumpraw *bool = flag.Bool("dumpraw", true, "Dump the raw client output to stderr")
 
 var PrintUsage = func() {
 	fmt.Fprintf(os.Stderr, "Usage of %s: \"host1:port1\" ...\n", os.Args[0])
