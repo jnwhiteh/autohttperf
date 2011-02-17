@@ -174,11 +174,17 @@ func StressTestRequests(workers []*Worker) {
 }
 
 func RunManualBenchmark(workers []*Worker) {
+	// Number of connections is rate * duration
+	connections := *numConns
+	if *duration > 0 {
+		connections = *connRate * *duration
+	}
+
 	args := &Args{
 		*server,
 		*port,
 		*url,
-		*numConns,
+		connections,
 		*connRate,
 		*requests,
 		*testLength,
@@ -190,7 +196,10 @@ func RunManualBenchmark(workers []*Worker) {
 	}
 
 	// Write the TSV header
-	WriteTSVHeader(os.Stdout)
+	if !*skipheader {
+		WriteTSVHeader(os.Stdout)
+	}
+
 	// Write out the perf data for each benchmark
 	for idx, perfdata := range data {
 		if *dumpraw {
@@ -218,6 +227,8 @@ var modeManual *bool = flag.Bool("manual", false, "Perform a manual benchmark")
 var numConns *int = flag.Int("numconns", 6000, "The number of connections to be opened (manual only)")
 var connRate *int = flag.Int("connrate", 200, "The rate of new connections (connections per second) (manual only)")
 var requests *int = flag.Int("requests", 5, "The number of requests sent per connection (manual only)")
+var duration *int= flag.Int("duration", 0, "The duration of the test to be performed")
+var skipheader *bool = flag.Bool("skipheader", false, "Do not print the CSV header")
 
 // Stress test options
 var numErrors *int = flag.Int("numerrors", 500, "The maximum acceptable number of errors to indicate 'stressed' (stress only)")
