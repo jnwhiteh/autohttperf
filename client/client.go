@@ -114,7 +114,10 @@ func StressTestConnections(workers []*Worker) {
 		//
 		// 10 second duration with 300 connections per second is 3000 connections,
 		// regardless of how many clients are used to distribute that load.
-		numconns := *testLength * rate
+		numconns := *duration * rate
+		if numconns <= 0 {
+			numconns = 60 * rate
+		}
 
 		args := new(Args)
 		args.Host = *server
@@ -187,7 +190,7 @@ func RunManualBenchmark(workers []*Worker) {
 		connections,
 		*connRate,
 		*requests,
-		*testLength,
+		*duration,
 	}
 
 	data, ok := RunDistributedBenchmark(workers, args)
@@ -233,7 +236,6 @@ var skipheader *bool = flag.Bool("skipheader", false, "Do not print the CSV head
 // Stress test options
 var numErrors *int = flag.Int("numerrors", 500, "The maximum acceptable number of errors to indicate 'stressed' (stress only)")
 var cooldown *int = flag.Int("cooldown", 3, "The number of steps to take following an 'error state' (stress only)")
-var testLength *int = flag.Int("duration", 60, "The duration of each 'step' of the stress test in seconds (stress only)")
 var sleep *int = flag.Int("sleeptime", 5, "The amount of time (in seconds) to sleep between each round (stress only)")
 var startRate *int = flag.Int("startrate", 100, "The connection start rate for the stress test")
 var dumpraw *bool = flag.Bool("dumpraw", true, "Dump the raw client output to stderr")
