@@ -216,6 +216,7 @@ func RunManualBenchmark(workers []*Worker) {
 var magic *bool = flag.Bool("magic", false ,"Perform a magic test on the given clients")
 var magicport *int = flag.Int("magicport", 12345, "The port to use")
 var magicurl *string = flag.String("magicurl", "", "The URL to request")
+var magicraw *bool = flag.Bool("magicraw", true, "Print the raw results to stderr")
 
 // Perform automated testing of a given server/port/URI
 func RunMagicBenchmark(workers []*Worker) {
@@ -282,6 +283,13 @@ func RunMagicBenchmark(workers []*Worker) {
 
 		// Write the results out so we have them.
 		WriteTSVParseDataSet(os.Stdout, data)
+
+		for idx, perfdata := range data {
+			line := "==================================================="
+			if *magicraw {
+				log.Printf("%s\nClient %d output: \n%s\n%s", line, idx, perfdata.Raw, line)
+			}
+		}
 
 		// Validate the results to make sure they make sense.
 		stddev, mean := ConnectionRateStddev(data)
