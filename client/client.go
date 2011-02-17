@@ -5,6 +5,7 @@ import "fmt"
 import "log"
 import "os"
 import "rpc"
+import "strings"
 import "time"
 
 // Runs a benchmark distributed over a set of clients. Returns a slice of the
@@ -212,6 +213,135 @@ func RunManualBenchmark(workers []*Worker) {
 	}
 }
 
+var magic *bool = flag.Bool("magic", false ,"Perform a magic test on the given clients")
+var magicport *int = flag.Int("magicport", 12345, "The port to use")
+var magicurl *string = flag.String("magicurl", "", "The URL to request")
+
+// Perform automated testing of a given server/port/URI
+func RunMagicBenchmark(workers []*Worker) {
+	// Run successive benchmarks against a given server and port
+	//   - Start at a low connection rate and steadily increase it
+	//     it.
+	//   - If we encounter ERRADDRINUSE (98) then we should
+	//     wait for 5 minutes and then re-issue the test. If,
+	//     after the delay the issue persists, then we have
+	//     reached the limit that the testing environment is capable
+	//     of sustaining.
+	//   - If we encounter a large percentage of 'connection refused'
+	//     events (50% or higher) than we can say that the server has
+	//     crashed and is no longer responsive. This is an ok response
+	//     since it gives us something to work with and draw conclusions
+	//     from.
+
+	// We are interested in REQUESTS/SECOND for our servers.
+
+	duration := 60
+	requests := 4
+	rate := 25
+	step := 25
+
+	WriteTSVHeader(os.Stdout)
+
+	var workerError bool = false
+	var stddevError bool = false
+	var unexpected98Error bool = false
+	var refusedError bool = false
+
+	for {
+		// 60 seconds at 100 connections per second = 6000 connections
+		// 6000 connections * 4 requests/connection = 24000 requests made
+		// 100 connections per second * 4 requests/connection = 400 requests per second
+
+		connections := duration * rate
+		args := &Args{
+			Host: "10.0.0.125",
+			Port: *magicport,
+			URL: *magicurl,
+			NumConnections: connections,
+			ConnectionRate: rate,
+			RequestsPerConnection: requests,
+		}
+
+		data, ok := RunDistributedBenchmark(workers, args)
+		if !ok {
+			if workerError {
+				// We have just retried this and it failed, so bail out
+				log.Printf("Worker error, retry failed")
+				return
+			} else {
+				// Attempt to re-try the same benchmark without any changes
+				log.Printf("Worker error, retrying")
+				workerError = true
+				continue
+			}
+		}
+		workerError = false
+
+
+		benchmarkId := data[0].BenchmarkId
+
+		// Write the results out so we have them.
+		WriteTSVParseDataSet(os.Stdout, data)
+
+		// Validate the results to make sure they make sense.
+		stddev, mean := ConnectionRateStddev(data)
+		if stddev > (mean * 0.05) {
+			// The standard deviation of the clients on this is more than
+			// 5% of the actual connection rate, so we should retry it
+			if stddevError {
+				log.Printf("Stddev error for benchmark %d, retry failed, continuing", benchmarkId)
+				stddevError = true
+				continue
+			} else {
+				log.Printf("Stddev error for benchmark %d, retrying", benchmarkId)
+			}
+		}
+		stddevError = false
+
+		// Check to see if there were any unexpected errors, and check the
+		// stderr to see what they were
+		for _, worker := range workers {
+			if len(worker.result.Stderr) > 0 {
+				if strings.Contains(worker.result.Stderr, "unexpected error 98") {
+					if unexpected98Error {
+						log.Printf("98 error for benchmark %d, retry failed", benchmarkId)
+						return
+					} else {
+						log.Printf("98 error for benchmark %d, sleeping then retrying", benchmarkId)
+						time.Sleep(1e9 * 60 * 5)
+						log.Printf("98 error for benchmark %d, done sleeping, retrying", benchmarkId)
+						unexpected98Error = true
+						continue
+					}
+				}
+			}
+		}
+		unexpected98Error = false
+
+		// Check to see if there are a high number of connection refused events
+		// if over 50% are refused, then retry again and then quit.
+		var connrefused float64 = 0
+		for _, perfdata := range data {
+			connrefused += perfdata.ErrConnectionRefused
+		}
+		if connrefused >= (data[0].TotalConnections * 0.5) {
+			if refusedError {
+				log.Printf("Refused error for benchmark %d, retry failed", benchmarkId)
+				return
+			} else {
+				log.Printf("Refused error for benchmark %d, retrying", benchmarkId)
+				refusedError = true
+				continue
+			}
+		}
+		refusedError = false
+
+		// Move on to the next benchmark by incrementing the rate
+		rate = rate + step
+	}
+
+}
+
 // General options that every single mode will require
 var help *bool = flag.Bool("help", false, "Display usage information")
 var server *string = flag.String("server", "localhost", "The hostname or IP address of the server")
@@ -270,8 +400,12 @@ func main() {
 		workers = append(workers, worker)
 	}
 
-	if !*modeStressConn && !*modeStressReqs && !*modeManual {
+	if !*magic && !*modeStressConn && !*modeStressReqs && !*modeManual {
 		log.Fatalf("No mode selected, please supply one of -stressconn, -stressreqs or -manual")
+	}
+
+	if *magic {
+		RunMagicBenchmark(workers)
 	}
 
 	if *modeManual {

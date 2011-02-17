@@ -3,6 +3,7 @@ package main
 import "fmt"
 import "io"
 import "log"
+import "math"
 import "strings"
 import "reflect"
 
@@ -87,4 +88,23 @@ func SetHasErrors(perfdata []*PerfData, threshold int) bool {
 	}
 
 	return false
+}
+
+func ConnectionRateStddev(perfdata []*PerfData) (float64, float64) {
+	// Calculates the standard deviation of the connection rate of the clients
+	numelems := float64(len(perfdata))
+
+	var mean float64 = 0
+	for _, data := range perfdata {
+		mean += data.ConnectionsPerSecond
+	}
+	mean = mean / float64(numelems)
+
+	var devsum float64 = 0
+	for _, data := range perfdata {
+		devsum += math.Pow(data.ConnectionsPerSecond - mean, 2)
+	}
+
+	stddev := math.Sqrt(devsum / float64(len(perfdata)))
+	return stddev, mean
 }
