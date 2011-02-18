@@ -18,6 +18,7 @@ type Args struct {
 	ConnectionRate        int
 	RequestsPerConnection int
 	Duration              int
+	Timeout               int
 }
 
 type Result struct {
@@ -55,6 +56,7 @@ func (h *HTTPerf) Benchmark(args *Args, result *Result) os.Error {
 		"--num-conns", fmt.Sprintf("%d", args.NumConnections),
 		"--rate", fmt.Sprintf("%d", args.ConnectionRate),
 		"--num-calls", fmt.Sprintf("%d", args.RequestsPerConnection),
+		"--timeout", fmt.Sprintf("%d", args.Timeout),
 		"--hog",
 	}
 

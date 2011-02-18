@@ -34,6 +34,7 @@ func RunDistributedBenchmark(workers []*Worker, args *Args) ([]*PerfData, bool) 
 			args.ConnectionRate / numWorkers,
 			args.RequestsPerConnection,
 			args.Duration,
+			5,
 		}
 
 		result := new(Result)
@@ -192,6 +193,7 @@ func RunManualBenchmark(workers []*Worker) {
 		*connRate,
 		*requests,
 		*duration,
+		*timeout,
 	}
 
 	data, ok := RunDistributedBenchmark(workers, args)
@@ -222,6 +224,7 @@ var magicduration *int = flag.Int("magicduration", 60, "Length of magic benchmar
 var magiclimit *int = flag.Int("magiclimit", 0, "Rate limit (0 to stop when error state encountered")
 var magicstep *int = flag.Int("magicstep", 25, "Rate of increase per round")
 var magicrequests *int = flag.Int("magicrequests", 4, "Number of requests per connection")
+var magictimeout *int = flag.Int("magictimeout", 5, "The timeout for the httperf client")
 
 // Perform automated testing of a given server/port/URI
 func RunMagicBenchmark(workers []*Worker) {
@@ -268,6 +271,7 @@ retry:
 			NumConnections: connections,
 			ConnectionRate: rate,
 			RequestsPerConnection: requests,
+			Timeout: *magictimeout,
 		}
 
 		data, ok := RunDistributedBenchmark(workers, args)

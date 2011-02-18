@@ -10,6 +10,7 @@ type Args struct {
 	ConnectionRate        int
 	RequestsPerConnection int
 	Duration              int
+	Timeout               int
 }
 
 type Result struct {
