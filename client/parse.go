@@ -38,8 +38,12 @@ func ParseResultsRaw(str string) []string {
 
 func ParseResults(str string, id string, date int64, args *Args) (*PerfData, os.Error) {
 	results := ParseResultsRaw(str)
-	data := new(PerfData)
 
+	if results == nil {
+		return nil, os.NewError(fmt.Sprintf("Could not parse results: %s", str))
+	}
+
+	data := new(PerfData)
 	data.BenchmarkId = id
 	data.BenchmarkDate = date
 	data.ArgHost = args.Host

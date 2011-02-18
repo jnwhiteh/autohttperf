@@ -259,6 +259,7 @@ func RunMagicBenchmark(workers []*Worker) {
 		// 6000 connections * 4 requests/connection = 24000 requests made
 		// 100 connections per second * 4 requests/connection = 400 requests per second
 
+retry:
 		connections := duration * rate
 		args := &Args{
 			Host: "10.0.0.125",
@@ -304,10 +305,10 @@ func RunMagicBenchmark(workers []*Worker) {
 			// 5% of the actual connection rate, so we should retry it
 			if stddevError {
 				log.Printf("Stddev error for benchmark %d, retry failed, continuing", benchmarkId)
-				stddevError = true
-				continue
 			} else {
 				log.Printf("Stddev error for benchmark %d, retrying", benchmarkId)
+				stddevError = true
+				goto retry
 			}
 		}
 		stddevError = false
@@ -322,17 +323,20 @@ func RunMagicBenchmark(workers []*Worker) {
 						if limit == 0 {
 							return
 						}
-						continue
+						goto proceed98
 					} else {
 						log.Printf("98 error for benchmark %d, sleeping then retrying", benchmarkId)
 						time.Sleep(1e9 * 60 * 5)
 						log.Printf("98 error for benchmark %d, done sleeping, retrying", benchmarkId)
 						unexpected98Error = true
-						continue
+						goto retry
 					}
 				}
 			}
 		}
+
+proceed98:
+
 		unexpected98Error = false
 
 		// Check to see if there are a high number of connection refused events
@@ -347,17 +351,24 @@ func RunMagicBenchmark(workers []*Worker) {
 				if limit == 0 {
 					return
 				}
-				return
+				goto proceedrefused
 			} else {
 				log.Printf("Refused error for benchmark %d, retrying", benchmarkId)
 				refusedError = true
-				continue
+				goto retry
 			}
 		}
+
+proceedrefused:
+
 		refusedError = false
 
 		// Move on to the next benchmark by incrementing the rate
 		rate = rate + step
+		if rate > limit {
+			log.Printf("We've reached our limit %d/%d, so stopping", rate, limit)
+			return
+		}
 	}
 
 }
