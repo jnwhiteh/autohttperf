@@ -369,7 +369,7 @@ proceedrefused:
 
 		// Move on to the next benchmark by incrementing the rate
 		rate = rate + step
-		if rate > limit {
+		if limit > 0 && rate > limit {
 			log.Printf("We've reached our limit %d/%d, so stopping", rate, limit)
 			return
 		}
