@@ -217,6 +217,11 @@ var magic *bool = flag.Bool("magic", false ,"Perform a magic test on the given c
 var magicport *int = flag.Int("magicport", 12345, "The port to use")
 var magicurl *string = flag.String("magicurl", "", "The URL to request")
 var magicraw *bool = flag.Bool("magicraw", true, "Print the raw results to stderr")
+var magicstart *int = flag.Int("magistart", 25, "Start rate for benchmarking")
+var magicduration *int = flag.Int("magicduration", 60, "Length of magic benchmark")
+var magiclimit *int = flag.Int("magiclimit", 0, "Rate limit (0 to stop when error state encountered")
+var magicstep *int = flag.Int("magicstep", 25, "Rate of increase per round")
+var magicrequests *int = flag.Int("magicrequests", 4, "Number of requests per connection")
 
 // Perform automated testing of a given server/port/URI
 func RunMagicBenchmark(workers []*Worker) {
@@ -236,10 +241,11 @@ func RunMagicBenchmark(workers []*Worker) {
 
 	// We are interested in REQUESTS/SECOND for our servers.
 
-	duration := 60
-	requests := 4
-	rate := 25
-	step := 25
+	limit := *magiclimit
+	duration := *magicduration
+	requests := *magicrequests
+	rate := *magicstart
+	step := *magicstep
 
 	WriteTSVHeader(os.Stdout)
 
@@ -313,7 +319,10 @@ func RunMagicBenchmark(workers []*Worker) {
 				if strings.Contains(worker.result.Stderr, "unexpected error 98") {
 					if unexpected98Error {
 						log.Printf("98 error for benchmark %d, retry failed", benchmarkId)
-						return
+						if limit == 0 {
+							return
+						}
+						continue
 					} else {
 						log.Printf("98 error for benchmark %d, sleeping then retrying", benchmarkId)
 						time.Sleep(1e9 * 60 * 5)
@@ -335,6 +344,9 @@ func RunMagicBenchmark(workers []*Worker) {
 		if connrefused >= (data[0].TotalConnections * 0.5) {
 			if refusedError {
 				log.Printf("Refused error for benchmark %d, retry failed", benchmarkId)
+				if limit == 0 {
+					return
+				}
 				return
 			} else {
 				log.Printf("Refused error for benchmark %d, retrying", benchmarkId)
